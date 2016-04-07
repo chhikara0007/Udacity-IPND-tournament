@@ -5,34 +5,31 @@
 
 import psycopg2
 
-#DB = psycopg2.connect("dbname = tournament")
-
 
 def connect():
-    """Connect to the PostgreSQL database.  Returns a database connection."""
-    return psycopg2.connect("dbname=tournament")
+    """Connect to the tournament database, create the database and cursor objects"""
+    db = psycopg2.connect(dbname='tournament', user='vagrant')
+    cursor = db.cursor()
+    return db,cursor 
 
 
 def deleteMatches():
     """Remove all the match records from the database."""
-    DB = connect()
-    cursor = DB.cursor()
+    db, cursor = connect()
     cursor.execute("DELETE FROM matches; DELETE FROM matchResults")
-    DB.commit()
+    db.commit()
 
 
 def deletePlayers():
     """Remove all the player records from the database."""
-    DB = connect()
-    cursor = DB.cursor()
+    db, cursor = connect()
     cursor.execute("DELETE FROM players")
-    DB.commit()
+    db.commit()
 
 
 def countPlayers():
     """Returns the number of players currently registered."""
-    DB = connect()
-    cursor = DB.cursor()
+    db, cursor = connect()
     cursor.execute("SELECT COUNT(player_id) FROM players")
     player_count = cursor.fetchall()
 
@@ -52,10 +49,9 @@ def registerPlayer(name):
     Args:
       name: the player's full name (need not be unique).
     """
-    DB = connect()
-    cursor = DB.cursor()
+    db, cursor = connect()
     cursor.execute("INSERT INTO players(player_name) VALUES(%s)",(name,))
-    DB.commit()
+    db.commit()
 
 
 def playerStandings():
@@ -71,8 +67,7 @@ def playerStandings():
         wins: the number of matches the player has won
         matches: the number of matches the player has played
     """
-    DB = connect()
-    cursor = DB.cursor()
+    db, cursor = connect()
     cursor.execute("SELECT * FROM playerStandings")
     standings = cursor.fetchall()
     return standings
@@ -85,12 +80,11 @@ def reportMatch(winner, loser):
       winner:  the id number of the player who won
       loser:  the id number of the player who lost
     """
-    DB = connect()
-    cursor = DB.cursor()
+    db, cursor = connect()
 
     # Add a match to the table matches. 
     cursor.execute("INSERT INTO matches(id_player_a, id_player_b) VALUES(%s, %s)", (winner, loser))
-    DB.commit()
+    db.commit()
 
     # Get the match id from matches
     cursor.execute("SELECT match_id from matches")
@@ -98,7 +92,7 @@ def reportMatch(winner, loser):
 
     # Add the results of the matches to the matchResults table.
     cursor.execute("INSERT INTO matchResults(match_id, player_id, match_win) VALUES(%s, %s, %s);INSERT INTO matchResults(match_id, player_id, match_loss) VALUES(%s, %s, %s)", (current_match_id[0], winner, 1, current_match_id[0], loser, 1))
-    DB.commit()
+    db.commit()
  
  
 def swissPairings():
@@ -117,8 +111,8 @@ def swissPairings():
         name2: the second player's name
     """
 
-    DB = connect()
-    cursor = DB.cursor()
+    db, cursor = connect()
+
     cursor.execute("SELECT id, name, sum(wins) as num FROM playerStandings GROUP BY id, name ORDER BY num DESC")
     player_win_count = cursor.fetchall()
 
@@ -146,11 +140,25 @@ def swissPairings():
             pairing_list.append((player_list[player][0],player_list[player][1], player_list[player + 1][0], player_list[player+1][1]))
         return pairing_list
 
-# swissPairings()
+
 
 # data used for testing: 
+
+# swissPairings()
 
 # INSERT INTO players(player_name) VALUES ('Twilight Sparkle'), ('Fluttershy'), ('Applejack'), ('Pinkie Pie'), ('Rarity'), ('Rainbow Dash'), ('Princess Celestia'), ('Princess Luna');
 # INSERT INTO matches(match_id, id_player_a, id_player_b) VALUES (1,1,2),(2,3,4),(3,5,6),(4,7,8),(5,1,3),(6,2,4),(7,5,7),(8,6,8);
 # INSERT INTO matchResults(match_id, player_id, match_win) VALUES (1,1,1),(1,2,0),(2,3,1),(2,4,0),(3,5,1),(3,6,0),(4,7,1),(4,8,0),(5,1,1),(5,3,0),(6,2,1),(6,4,0),(7,5,1),(7,7,0),(8,6,1),(8,8,0);
 
+# The code below was an attempt to execute the tournament.sql file from within the tournament.py module. 
+# it was abandoned do the limitation of PostgreSQL and psycopg2 - not allowing DROP or CREATE
+# DATABASE statements from within a function. 
+
+    # conn = psycopg2.connect(dbname='template1', user='vagrant')
+    # conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+    # cursor = conn.cursor()
+    # # cursor.execute("CREATE DATABASE tournament")
+    # # conn.commit()
+
+    # sqlfile = open('/vagrant/tournament/tournament.sql', 'r')
+    # cursor.execute(sqlfile.read())
