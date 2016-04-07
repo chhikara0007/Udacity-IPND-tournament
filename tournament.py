@@ -149,16 +149,3 @@ def swissPairings():
 # INSERT INTO players(player_name) VALUES ('Twilight Sparkle'), ('Fluttershy'), ('Applejack'), ('Pinkie Pie'), ('Rarity'), ('Rainbow Dash'), ('Princess Celestia'), ('Princess Luna');
 # INSERT INTO matches(match_id, id_player_a, id_player_b) VALUES (1,1,2),(2,3,4),(3,5,6),(4,7,8),(5,1,3),(6,2,4),(7,5,7),(8,6,8);
 # INSERT INTO matchResults(match_id, player_id, match_win) VALUES (1,1,1),(1,2,0),(2,3,1),(2,4,0),(3,5,1),(3,6,0),(4,7,1),(4,8,0),(5,1,1),(5,3,0),(6,2,1),(6,4,0),(7,5,1),(7,7,0),(8,6,1),(8,8,0);
-
-# The code below was an attempt to execute the tournament.sql file from within the tournament.py module. 
-# it was abandoned do the limitation of PostgreSQL and psycopg2 - not allowing DROP or CREATE
-# DATABASE statements from within a function. 
-
-    # conn = psycopg2.connect(dbname='template1', user='vagrant')
-    # conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
-    # cursor = conn.cursor()
-    # # cursor.execute("CREATE DATABASE tournament")
-    # # conn.commit()
-
-    # sqlfile = open('/vagrant/tournament/tournament.sql', 'r')
-    # cursor.execute(sqlfile.read())
